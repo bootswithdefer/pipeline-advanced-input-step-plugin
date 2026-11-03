@@ -7,11 +7,11 @@
         <version>6.2250.va_d01d559a_209</version>
         <relativePath/>
     </parent>
-    <artifactId>pipeline-input-step</artifactId>
+    <artifactId>pipeline-advanced-input-step</artifactId>
     <version>${changelist}</version>
     <packaging>hpi</packaging>
-    <name>Pipeline: Input Step</name>
-    <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+    <name>Pipeline: Advanced Input Step</name>
+    <url>https://github.com/${gitHubRepo}</url>
     <licenses>
         <license>
             <name>MIT License</name>
@@ -41,7 +41,7 @@
         <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
         <jenkins.baseline>2.479</jenkins.baseline>
         <jenkins.version>${jenkins.baseline}.3</jenkins.version>
-        <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
+        <gitHubRepo>bootswithdefer/pipeline-advanced-input-step-plugin</gitHubRepo>
         <hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts>
     </properties>
     <dependencyManagement>

@@ -1,0 +1,115 @@
+---
+name: release
+
+# Publishes the plugin to a GitHub Release (not the Jenkins update center).
+# Trigger by pushing a tag like v1.0 or v1.2.3. The tag (minus the leading "v")
+# becomes the plugin version baked into the .hpi and the update-center.json.
+#
+# Release assets:
+#   * pipeline-advanced-input-step.hpi   — the plugin
+#   * update-center.json                 — signed manifest pointing at the .hpi
+#
+# An in-cluster nginx (or any static host) serves these two files; controllers
+# add the update-center.json as an update site and trust the signing root CA.
+#
+# Required repository secrets:
+#   UC_SIGNING_KEY   — PEM private key used to sign the manifest
+#   UC_SIGNING_CERT  — PEM certificate matching the key (its root must be
+#                      mounted into $JENKINS_HOME/update-center-rootCAs/ on the
+#                      controllers)
+# Required repository variable:
+#   UC_BASE_URL      — base URL the update center is served from, e.g.
+#                      http://advanced-input-uc.jenkins-uc.svc.cluster.local
+#                      The manifest's plugin url is <base>/plugins/<name>/<ver>/<name>.hpi
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (e.g. 1.0). Defaults to a timestamp.'
+        required: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub Release and upload assets
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Maven 4 + JDK 21 come from mise (.mise.toml / tool versions). The parent
+      # POM targets Maven 4; stock setup-java + Maven 3 cannot build the hpi.
+      - uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
+        with:
+          install: true
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            v="${GITHUB_REF_NAME#v}"
+          elif [ -n "${{ github.event.inputs.version }}" ]; then
+            v="${{ github.event.inputs.version }}"
+          else
+            v="0.0.$(date +%Y%m%d%H%M)"
+          fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "Building version $v"
+
+      - name: Build hpi
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          mvn -s maven-settings.xml -B -ntp -DskipTests \
+            -Dset.changelist -Dchangelist="$VERSION" clean package
+          # Normalise the artifact name (the finalName carries the version).
+          cp target/*.hpi "target/pipeline-advanced-input-step.hpi"
+
+      - name: Write signing material
+        env:
+          UC_SIGNING_KEY: ${{ secrets.UC_SIGNING_KEY }}
+          UC_SIGNING_CERT: ${{ secrets.UC_SIGNING_CERT }}
+        run: |
+          umask 077
+          mkdir -p "$RUNNER_TEMP/signing"
+          printf '%s' "$UC_SIGNING_KEY"  > "$RUNNER_TEMP/signing/uc.key"
+          printf '%s' "$UC_SIGNING_CERT" > "$RUNNER_TEMP/signing/uc.crt"
+
+      - name: Generate signed update-center.json
+        env:
+          UC_BASE_URL: ${{ vars.UC_BASE_URL }}
+        run: |
+          : "${UC_BASE_URL:?set the UC_BASE_URL repository variable}"
+          uv run --script scripts/make-update-center.py \
+            --hpi target/pipeline-advanced-input-step.hpi \
+            --base-url "$UC_BASE_URL" \
+            --key "$RUNNER_TEMP/signing/uc.key" \
+            --cert "$RUNNER_TEMP/signing/uc.crt" \
+            --out update-center.json
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.ver.outputs.version }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          # On workflow_dispatch there is no tag ref; create one from the version.
+          if [ "${{ github.event_name }}" != "push" ]; then
+            TAG="v$VERSION"
+          fi
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --generate-notes \
+            "target/pipeline-advanced-input-step.hpi#pipeline-advanced-input-step.hpi" \
+            "update-center.json#update-center.json"

@@ -1,0 +1,8 @@
+# Build toolchain for this plugin.
+#
+# The parent POM targets Maven 4 (its maven-hpi-plugin bundles a Maven-4-era
+# Sisu that the Maven 3.9.x container cannot scan, so the `hpi` packaging fails
+# to register under Maven 3). JDK 21 is the build/runtime baseline.
+[tools]
+maven = "4.0.0-rc-7"
+java = "21"

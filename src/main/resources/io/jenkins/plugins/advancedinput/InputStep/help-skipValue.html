@@ -1,0 +1,12 @@
+<p>
+    The value returned to the pipeline when the skip outcome is chosen. Defaults to
+    <code>SKIPPED</code>. Only meaningful when a <code>skip</code> caption is set.
+    The pipeline can branch on it:
+</p>
+
+<pre>
+        def result = advancedInput message: 'Apply the plan?', ok: 'Apply', skip: 'Skip apply', skipValue: 'SKIP'
+        if (result == 'SKIP') {
+            echo 'User chose to skip the apply'
+        }
+    </pre>

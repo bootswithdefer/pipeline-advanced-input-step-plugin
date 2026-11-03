@@ -1,0 +1,15 @@
+<p>
+    Optional caption for a third "skip" button, offered alongside "proceed" and "abort".
+    When set, choosing it resumes the pipeline with the configured skip return value
+    (see <code>skipValue</code>) instead of proceeding normally or aborting the build.
+    Leave empty to offer only proceed and abort.
+</p>
+
+<p>Usage: <code>def result = advancedInput message: 'Apply the plan?', ok: 'Apply', skip: 'Skip apply', cancel: 'Abort'</code></p>
+
+<p>Which will look like:
+<pre>
+        Apply the plan?
+        Apply, Skip apply or Abort
+    </pre>
+</p>

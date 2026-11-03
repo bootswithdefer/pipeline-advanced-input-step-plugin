@@ -1,0 +1,49 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">
+  <!--
+    Build settings for this plugin.
+
+    Jenkins plugin artifacts (the parent POM, maven-hpi-plugin, and the Jenkins
+    core dependencies) are published to the Jenkins community repository, not to
+    Maven Central. This file makes both repositories available so a plain
+    checkout builds with no further configuration.
+
+    No mirror is declared, so each repository is consulted in turn: Maven Central
+    for ordinary dependencies, the Jenkins repository for Jenkins-specific ones.
+  -->
+  <profiles>
+    <profile>
+      <id>jenkins-build</id>
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>https://repo.maven.apache.org/maven2</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+        <repository>
+          <id>repo.jenkins-ci.org</id>
+          <url>https://repo.jenkins-ci.org/public/</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>central</id>
+          <url>https://repo.maven.apache.org/maven2</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>false</enabled></snapshots>
+        </pluginRepository>
+        <pluginRepository>
+          <id>repo.jenkins-ci.org</id>
+          <url>https://repo.jenkins-ci.org/public/</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+  </profiles>
+  <activeProfiles>
+    <activeProfile>jenkins-build</activeProfile>
+  </activeProfiles>
+</settings>
