@@ -91,7 +91,7 @@ jobs:
           UC_BASE_URL: ${{ vars.UC_BASE_URL }}
         run: |
           : "${UC_BASE_URL:?set the UC_BASE_URL repository variable}"
-          uv run --script scripts/make-update-center.py \
+          mise exec uv@latest -- uv run --script scripts/make-update-center.py \
             --hpi target/pipeline-advanced-input-step.hpi \
             --base-url "$UC_BASE_URL" \
             --key "$RUNNER_TEMP/signing/uc.key" \
