@@ -50,8 +50,7 @@ run:
 # Build the hpi and emit a signed update-center.json (needs a key/cert pair).
 # Example: just update-center 1.0 https://uc.example/advanced-input key.pem cert.pem
 update-center version base_url key cert:
-    {{_mvn}} -DskipTests -Dset.changelist -Dchangelist={{version}} clean package
-    cp target/pipeline-advanced-input-step.hpi target/pipeline-advanced-input-step.hpi
+    {{_mvn}} -DskipTests -Dchangelist={{version}} clean package
     uv run --script scripts/make-update-center.py \
         --hpi target/pipeline-advanced-input-step.hpi \
         --base-url {{base_url}} --key {{key}} --cert {{cert}} \

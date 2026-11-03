@@ -72,9 +72,9 @@ jobs:
           VERSION: ${{ steps.ver.outputs.version }}
         run: |
           mvn -s maven-settings.xml -B -ntp -DskipTests \
-            -Dset.changelist -Dchangelist="$VERSION" clean package
-          # Normalise the artifact name (the finalName carries the version).
-          cp target/*.hpi "target/pipeline-advanced-input-step.hpi"
+            -Dchangelist="$VERSION" clean package
+          # The hpi finalName is version-less, so the artifact is already named
+          # target/pipeline-advanced-input-step.hpi — no rename needed.
 
       - name: Write signing material
         env:
