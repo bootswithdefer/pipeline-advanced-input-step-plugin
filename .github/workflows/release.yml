@@ -83,8 +83,12 @@ jobs:
         run: |
           umask 077
           mkdir -p "$RUNNER_TEMP/signing"
-          printf '%s' "$UC_SIGNING_KEY"  > "$RUNNER_TEMP/signing/uc.key"
-          printf '%s' "$UC_SIGNING_CERT" > "$RUNNER_TEMP/signing/uc.crt"
+          # Guarantee a trailing newline; some openssl builds reject a PEM whose
+          # final -----END----- line is not newline-terminated.
+          printf '%s\n' "$UC_SIGNING_KEY"  > "$RUNNER_TEMP/signing/uc.key"
+          printf '%s\n' "$UC_SIGNING_CERT" > "$RUNNER_TEMP/signing/uc.crt"
+          # Fail fast with a clear message if the key did not round-trip.
+          openssl rsa -in "$RUNNER_TEMP/signing/uc.key" -check -noout
 
       - name: Generate signed update-center.json
         env:

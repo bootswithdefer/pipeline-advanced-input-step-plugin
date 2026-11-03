@@ -98,7 +98,10 @@ def sign(body: bytes, key: Path, cert: Path) -> dict[str, object]:
     """Produce the Jenkins ``signature`` block via openssl over the body."""
 
     def openssl(args: list[str], stdin: bytes) -> bytes:
-        return subprocess.run(["openssl", *args], input=stdin, capture_output=True, check=True).stdout
+        proc = subprocess.run(["openssl", *args], input=stdin, capture_output=True, check=False)
+        if proc.returncode != 0:
+            raise RuntimeError(f"openssl {' '.join(args)} failed (exit {proc.returncode}): {proc.stderr.decode(errors='replace').strip()}")
+        return proc.stdout
 
     with tempfile.TemporaryDirectory() as td:
         bodyfile = Path(td) / "body"
