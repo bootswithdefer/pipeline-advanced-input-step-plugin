@@ -12,8 +12,16 @@ plus later dependency updates. For changes before the fork, see the upstream rel
 
 ## [Unreleased]
 
+## [1.1] - 2026-11-04
+
 ### Fixed
 
+- The stock `input` step works on a build that has already used
+  `advancedInput`. Both steps served their inputs at `…/input/`, and Jenkins
+  routed requests to whichever action was added first, so clicking Proceed on a
+  later stock `input` did nothing. `advancedInput` now uses `…/advancedInput/`.
+  Console links on builds paused across the upgrade still point at the old URL;
+  use Paused for Input in the build sidebar to answer those.
 - `scripts/setup-signing.sh` stores the multiline signing key and certificate
   correctly; the previous `gh secret set --body -` form saved an empty key.
 
@@ -35,5 +43,6 @@ plus later dependency updates. For changes before the fork, see the upstream rel
   `io.jenkins.plugins.advancedinput`. Pipelines call `advancedInput`; `input`
   remains the stock step.
 
-[Unreleased]: https://github.com/bootswithdefer/pipeline-advanced-input-step-plugin/compare/v1.0...HEAD
+[Unreleased]: https://github.com/bootswithdefer/pipeline-advanced-input-step-plugin/compare/v1.1...HEAD
+[1.1]: https://github.com/bootswithdefer/pipeline-advanced-input-step-plugin/compare/v1.0...v1.1
 [1.0]: https://github.com/bootswithdefer/pipeline-advanced-input-step-plugin/releases/tag/v1.0

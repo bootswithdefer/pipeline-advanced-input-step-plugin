@@ -117,7 +117,9 @@ public class InputAction implements RunAction2 {
 
     @Override
     public String getUrlName() {
-        return "input";
+        // Not "input": the stock step's InputAction owns that URL on the same build, and
+        // Stapler resolves it to whichever action was added first.
+        return "advancedInput";
     }
 
     public synchronized void add(@NonNull InputStepExecution step) throws IOException, InterruptedException, TimeoutException {

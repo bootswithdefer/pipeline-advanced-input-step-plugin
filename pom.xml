@@ -123,6 +123,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <!-- The stock step, to test that both coexist on one build. -->
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>pipeline-input-step</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
             <scope>test</scope>

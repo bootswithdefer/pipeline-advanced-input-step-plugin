@@ -94,6 +94,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -596,8 +597,36 @@ public class InputStepTest {
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getPage(new WebRequest(
-                wc.createCrumbedUrl("job/p/1/input/" + id + "/proceedEmpty"), HttpMethod.POST));
+                wc.createCrumbedUrl("job/p/1/" + action.getUrlName() + "/" + id + "/proceedEmpty"), HttpMethod.POST));
         j.assertBuildStatusSuccess(j.waitForCompletion(b));
+    }
+
+    @Test
+    public void coexistsWithStockInputStep() throws Exception {
+        WorkflowJob p = j.createProject(WorkflowJob.class, "p");
+        p.setDefinition(new CpsFlowDefinition(
+                "advancedInput id: 'Ours', message: 'ours'\n"
+                + "input id: 'Stock', message: 'stock'\n"
+                + "echo 'both proceeded'", true));
+        WorkflowRun b = p.scheduleBuild2(0).waitForStart();
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        j.waitForMessage("ours", b);
+        InputAction ours = b.getAction(InputAction.class);
+        wc.getPage(new WebRequest(
+                wc.createCrumbedUrl("job/p/1/" + ours.getUrlName() + "/" + ours.getExecution("Ours").getId() + "/proceedEmpty"),
+                HttpMethod.POST));
+
+        // The stock step now shares the build with our (still attached) action.
+        j.waitForMessage("stock", b);
+        org.jenkinsci.plugins.workflow.support.steps.input.InputAction stock =
+                b.getAction(org.jenkinsci.plugins.workflow.support.steps.input.InputAction.class);
+        assertNotEquals(ours.getUrlName(), stock.getUrlName());
+        wc.getPage(new WebRequest(
+                wc.createCrumbedUrl("job/p/1/" + stock.getUrlName() + "/" + stock.getExecution("Stock").getId() + "/proceedEmpty"),
+                HttpMethod.POST));
+
+        j.assertLogContains("both proceeded", j.assertBuildStatusSuccess(j.waitForCompletion(b)));
     }
 
     private void selectUserCredentials(JenkinsRule.WebClient wc, WorkflowRun run, CpsFlowExecution execution, String credentialsId, String username, String inputId) throws Exception {
