@@ -6,3 +6,4 @@ work
 /.project
 /.settings/
 .ruff_cache/
+signing/
