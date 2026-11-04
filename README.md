@@ -5,62 +5,101 @@ optional third **skip** outcome in addition to proceed and abort.
 
 This is a fork of the official
 [Pipeline: Input Step](https://github.com/jenkinsci/pipeline-input-step-plugin) plugin.
-It installs under a distinct artifact ID (`pipeline-advanced-input-step`), a distinct
-Java package, and a distinct step name (`advancedInput`), so it **coexists** with the
-stock `input` step rather than replacing it. Pipelines that want the skip outcome call
-`advancedInput`; everything else keeps using `input`.
+It installs under a distinct artifact ID (`pipeline-advanced-input-step`), Java package,
+and step name (`advancedInput`), so it coexists with the stock `input` step rather than
+replacing it. Pipelines that want the skip outcome call `advancedInput`; everything else
+keeps using `input`.
 
-A Proceed or Abort option is shown in the stage view and inline in the build console.
-The parameter entry screen can be accessed via a link at the bottom of the build console
-log or via a link in the sidebar for a build.
+The options are shown in the stage view and inline in the build console. The parameter
+entry screen is linked from the bottom of the console log and from the build sidebar.
 
-Example with `Message Parameter`:
+## Usage
 
-  advancedInput 'Proceed or Abort'
+Use the [Pipeline Syntax Snippet Generator](https://www.jenkins.io/redirect/pipeline-snippet-generator)
+to build an `advancedInput` call interactively.
 
+### Message
 
-Example with `Custom identifier`:
-Every input step has a unique identifier. It is used in the generated URL to proceed or abort.
+```groovy
+advancedInput 'Proceed or Abort'
+```
 
-A specific identifier could be used, for example, to mechanically respond to the input from some external process/tool.
+### Skip
 
-   advancedInput id: '2', message: 'input-message'
+Offers a third outcome alongside proceed and abort. Choosing it resumes the pipeline with
+the configured `skipValue` (default `SKIPPED`), so the pipeline can branch on the result.
+Skip requires the same permission as proceed (Job/Build). When `skip` is omitted, only
+proceed and abort are shown.
 
+```groovy
+def result = advancedInput message: 'Apply the plan?', ok: 'Apply', skip: 'Skip apply', skipValue: 'SKIP', cancel: 'Abort'
+if (result == 'SKIP') {
+    echo 'User chose to skip the apply'
+}
+```
 
-Example with `Cancel Button Caption` and `OK Button Caption` (Optional):
+### Button captions
 
-   advancedInput message: 'input-message', cancel: 'Cancel', ok: 'OK'
+```groovy
+advancedInput message: 'input-message', cancel: 'Cancel', ok: 'OK'
+```
 
-Example with a `Skip` option (Optional):
-Offers a third outcome alongside proceed and abort. Choosing it resumes the pipeline
-with the configured `skipValue` (default `SKIPPED`) instead of proceeding or aborting,
-so the pipeline can branch on the result. Skip requires the same permission as proceed
-(Job/Build). When `skip` is omitted, only proceed and abort are shown.
+### Custom identifier
 
-   def result = advancedInput message: 'Apply the plan?', ok: 'Apply', skip: 'Skip apply', skipValue: 'SKIP', cancel: 'Abort'
-   if (result == 'SKIP') {
-     echo 'User chose to skip the apply'
-   }
+Every input step has a unique identifier, used in the generated URL to proceed or abort.
+Setting one explicitly lets an external process respond to the input.
 
+```groovy
+advancedInput id: '2', message: 'input-message'
+```
 
-Example with `Allowed Submitter`:
-Usernames and/or external group names of those permitted to respond to the input, separated by ','. Spaces will be trimmed automatically, so "Alice, Bob, Charles" is the same as "Alice,Bob,Charles".
-Note: Jenkins administrators are able to respond to the input regardless of the value of this parameter. Users with [**Job/cancel** permission](https://www.jenkins.io/doc/book/security/access-control/permissions/#job-permissions) may also respond with 'Abort' to the input.
+### Allowed submitters
 
-   advancedInput message: '', submitter: 'jenkins-user, jenkins-user2'
+A comma-separated list of usernames and/or external group names permitted to respond.
+Surrounding spaces are trimmed, so `Alice, Bob` equals `Alice,Bob`.
 
-Example with Parameter to store the `Approving Submitter`:
+```groovy
+advancedInput message: '', submitter: 'jenkins-user, jenkins-user2'
+```
 
-If specified, this is the name of the return value that will contain the username of the user that approves this input. The return value will be handled in a fashion similar to the parameters value.
+> [!NOTE]
+> Jenkins administrators can always respond. Users with
+> [Job/Cancel permission](https://www.jenkins.io/doc/book/security/access-control/permissions/#job-permissions)
+> can also respond with Abort.
 
-   advancedInput message: 'input-message', submitter: 'jenkins-submitter, jenkins-submitter2', submitterParameter: 'approvers-id-to-be-stored'
+### Recording the approver
 
+`submitterParameter` names a return value that receives the username of the approving
+user, handled like the other parameter values.
 
-Use the [Pipeline Syntax Snippet Generator](https://www.jenkins.io/redirect/pipeline-snippet-generator) to select options for the `advancedInput` step.
+```groovy
+advancedInput message: 'input-message', submitter: 'jenkins-submitter, jenkins-submitter2', submitterParameter: 'approvers-id-to-be-stored'
+```
+
+### Options
+
+| Option | Description |
+|---|---|
+| `message` | Prompt shown to the user (required) |
+| `id` | Custom identifier used in the proceed/abort URL |
+| `ok` | Proceed button caption |
+| `cancel` | Abort button caption |
+| `skip` | Skip button caption; enables the skip outcome |
+| `skipValue` | Value returned when skip is chosen (default `SKIPPED`) |
+| `submitter` | Comma-separated users or groups allowed to respond |
+| `submitterParameter` | Return value name that receives the approver's username |
+| `parameters` | Parameter definitions to collect from the user |
 
 ## Building and releasing
 
-See the `justfile` for build tasks (`just compile`, `just test`, `just package`). The
-build runs on Maven 4 (via [mise](https://mise.jdx.dev/)) and JDK 21; the parent POM
-targets Maven 4. Tagged releases publish the signed `.hpi` and `update-center.json` to a
-GitHub Release — see `.github/workflows/release.yml`.
+The build uses Maven 4 (via [mise](https://mise.jdx.dev/)) and JDK 21; the parent POM
+targets Maven 4. Build tasks live in the `justfile`:
+
+```sh
+just compile
+just test
+just package
+```
+
+Tagged releases publish the signed `.hpi` and `update-center.json` to a GitHub Release;
+see `.github/workflows/release.yml`. Changes are tracked in [CHANGELOG.md](CHANGELOG.md).
