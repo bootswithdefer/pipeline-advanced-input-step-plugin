@@ -12,6 +12,10 @@ plus later dependency updates. For changes before the fork, see the upstream rel
 
 ## [Unreleased]
 
+### Changed
+
+- GitHub Releases carry the version's CHANGELOG.md section as their notes.
+
 ## [1.1] - 2026-11-04
 
 ### Fixed

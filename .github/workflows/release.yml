@@ -102,6 +102,20 @@ jobs:
             --cert "$RUNNER_TEMP/signing/uc.crt" \
             --out update-center.json
 
+      - name: Extract release notes
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          # The CHANGELOG.md section for this version, between its heading and the next.
+          awk -v v="$VERSION" '
+            /^## \[/ { if (found) exit; found = index($0, "## [" v "]") == 1; next }
+            found
+          ' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          if [ ! -s "$RUNNER_TEMP/notes.md" ]; then
+            echo "No CHANGELOG.md entry for $VERSION." > "$RUNNER_TEMP/notes.md"
+          fi
+          cat "$RUNNER_TEMP/notes.md"
+
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -114,6 +128,6 @@ jobs:
           fi
           gh release create "$TAG" \
             --title "$TAG" \
-            --generate-notes \
+            --notes-file "$RUNNER_TEMP/notes.md" \
             "target/pipeline-advanced-input-step.hpi#pipeline-advanced-input-step.hpi" \
             "update-center.json#update-center.json"
