@@ -12,6 +12,8 @@ plus later dependency updates. For changes before the fork, see the upstream rel
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-11-12
+
 ### Changed
 
 - GitHub Releases carry the version's CHANGELOG.md section as their notes.
@@ -53,6 +55,7 @@ plus later dependency updates. For changes before the fork, see the upstream rel
   `io.jenkins.plugins.advancedinput`. Pipelines call `advancedInput`; `input`
   remains the stock step.
 
-[Unreleased]: https://github.com/bootswithdefer/pipeline-advanced-input-step-plugin/compare/v1.1...HEAD
+[Unreleased]: https://github.com/bootswithdefer/pipeline-advanced-input-step-plugin/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/bootswithdefer/pipeline-advanced-input-step-plugin/compare/v1.1...v1.1.1
 [1.1]: https://github.com/bootswithdefer/pipeline-advanced-input-step-plugin/compare/v1.0...v1.1
 [1.0]: https://github.com/bootswithdefer/pipeline-advanced-input-step-plugin/releases/tag/v1.0
