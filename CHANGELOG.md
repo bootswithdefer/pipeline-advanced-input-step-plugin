@@ -16,6 +16,12 @@ plus later dependency updates. For changes before the fork, see the upstream rel
 
 - GitHub Releases carry the version's CHANGELOG.md section as their notes.
 
+### Fixed
+
+- The `X-Dialog-Title` header no longer carries leading or trailing whitespace
+  from the input message, which HTTP/2 rejects. Ported from upstream
+  [#352](https://github.com/jenkinsci/pipeline-input-step-plugin/pull/352).
+
 ## [1.1] - 2026-11-04
 
 ### Fixed
